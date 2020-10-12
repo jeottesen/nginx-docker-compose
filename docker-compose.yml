@@ -1,0 +1,61 @@
+version: "3.8"
+
+secrets:
+    config_json:
+        file: secrets.json
+
+services:
+    nginx:
+        image: nginx
+        container_name: nginx
+        restart: unless-stopped
+        ports:
+            - '80:80'
+            - '443:443'
+        volumes:
+            - '~/docker/containers/nginx/html:/etc/nginx/html'
+            - '~/docker/containers/nginx/config:/etc/nginx'
+            - '~/docker/containers/certbot/conf:/etc/letsencrypt'
+            - '~/docker/containers/certbot/www:/var/www/certbot'
+        logging:
+            options:
+                max-size: 1m
+        command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+    certbot:
+        image: certbot/certbot
+        container_name: certbot
+        volumes:
+            - '~/docker/containers/certbot/conf:/etc/letsencrypt'
+            - '~/docker/containers/certbot/www:/var/www/certbot'
+        entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+    homeassistant:
+        container_name: home-assistant
+        image: homeassistant/home-assistant:stable
+        volumes:
+            - '~/docker/containers/homeassistant/config:/config'
+        environment:
+            - PUID=${PUID}
+            - PGID=${PGID}
+            - TZ=${TZ}
+        restart: always
+
+    duckdns:
+        image: linuxserver/duckdns
+        container_name: duckdns
+        environment:
+            - PUID=${PUID}
+            - PGID=${PGID}
+            - TZ=${TZ}
+            - SUBDOMAINS=${SUBDOMAINS}
+            - FILE__TOKEN=/run/secrets/token
+        volumes:
+            - '~/docker/containers/duckdns/config:/config'
+        restart: unless-stopped
+        secrets:
+            - token
+
+secrets:
+    token:
+        file: token.txt
