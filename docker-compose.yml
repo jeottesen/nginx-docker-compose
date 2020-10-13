@@ -1,8 +1,8 @@
 version: "3.8"
 
 secrets:
-    config_json:
-        file: secrets.json
+    token:
+        file: token.txt
 
 services:
     nginx:
@@ -21,14 +21,8 @@ services:
             options:
                 max-size: 1m
         command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
-
-    certbot:
-        image: certbot/certbot
-        container_name: certbot
-        volumes:
-            - '~/docker/containers/certbot/conf:/etc/letsencrypt'
-            - '~/docker/containers/certbot/www:/var/www/certbot'
-        entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+        networks:
+            - servers
 
     homeassistant:
         container_name: home-assistant
@@ -40,6 +34,18 @@ services:
             - PGID=${PGID}
             - TZ=${TZ}
         restart: always
+        networks:
+            - servers
+
+    certbot:
+        image: certbot/certbot
+        container_name: certbot
+        volumes:
+            - '~/docker/containers/certbot/conf:/etc/letsencrypt'
+            - '~/docker/containers/certbot/www:/var/www/certbot'
+        entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+        networks:
+            - isolated
 
     duckdns:
         image: linuxserver/duckdns
@@ -50,12 +56,16 @@ services:
             - TZ=${TZ}
             - SUBDOMAINS=${SUBDOMAINS}
             - FILE__TOKEN=/run/secrets/token
-        volumes:
-            - '~/docker/containers/duckdns/config:/config'
         restart: unless-stopped
         secrets:
             - token
+        networks:
+            - isolated
 
-secrets:
-    token:
-        file: token.txt
+networks:
+    servers:
+        # Containers part of the reverse proxy system
+        driver: bridge
+    isolated:
+        # Containers not part of the reverse proxy system
+        driver: bridge

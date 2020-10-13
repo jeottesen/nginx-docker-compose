@@ -6,11 +6,13 @@ if ! [ -x "$(command -v docker-compose)" ]; then
 fi
 
 
-domains=(cobaltcavern.com www.cobaltcavern.com forge.cobaltcavern.com)
+domains=(my_server)
 rsa_key_size=4096
-data_path="/home/ec2-user/docker/containers/certbot"
+data_path="/home/$USER/docker/containers/certbot"
 email="" # Adding a valid address is strongly recommended
-staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
+ # Set staging to 1 if you're testing your setup to avoid hitting request limits
+ # Set staging to 2 to just create the nginx dummy scripts.
+staging=0
 
 if [ -d "$data_path" ]; then
   read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
@@ -42,6 +44,11 @@ echo
 echo "### Starting nginx ..."
 docker-compose up --force-recreate -d nginx
 echo
+
+if [ $staging == "2" ]; then 
+  echo "Testing with dummy scripts. Now exiting."
+  exit 0 
+fi
 
 echo "### Deleting dummy certificate for $domains ..."
 docker-compose run --rm --entrypoint "\
