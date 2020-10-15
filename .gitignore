@@ -1,4 +1,6 @@
 token.txt
 containers/homeassistant/*
+containers/influxdb/*
+containers/grafana/*
 */nginx/ssl/
 */certbot/

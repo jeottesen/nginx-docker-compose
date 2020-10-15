@@ -24,16 +24,24 @@ services:
         networks:
             - servers
 
-    homeassistant:
-        container_name: home-assistant
-        image: homeassistant/home-assistant:stable
-        volumes:
-            - '~/docker/containers/homeassistant/config:/config'
-        environment:
-            - PUID=${PUID}
-            - PGID=${PGID}
-            - TZ=${TZ}
+
+    grafana:
+        image: grafana/grafana
+        container_name: grafana
+        user: ${PUID}
         restart: always
+        volumes:
+            - '~/docker/containers/grafana/config/grafana.ini:/etc/grafana/grafana.ini'
+            - '~/docker/containers/grafana/data:/var/lib/grafana/data'
+        networks:
+            - servers
+
+    influxdb:
+        image: influxdb
+        container_name: influxdb
+        restart: always
+        volumes:
+            - '~/docker/containers/influxdb:/var/lib/influxdb'
         networks:
             - servers
 
