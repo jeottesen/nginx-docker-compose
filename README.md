@@ -1,9 +1,8 @@
-# smarthome-docker-compose
-An nginx reverse proxy for homeassistant and duck dns.  
-Based off my [foundry-vtt configuration](https://github.com/jeottesen/foundry-docker-compose). But since that 
-was running on an AWS server I didn't need to set up DuckDNS. DuckDNS will let me host homeassistant from my home network.  
+# nginx-docker-compose
+An extendable nginx reverse proxy.  
+Usefull for homeassistant, plex, foundryvtt, and more.
 
-I have opted to running the supervised version of home assistant on a debian install rather than through a docker container. I wanted to use the supervised functionality.  
+Easily add subdomain proxies and subpath proxies. Get ssl up and running through letsencrpyt and certbot.
 
 Run init-letsencrypt.sh after setting up docker and docker-compose. Set the staging to two and configure the email and domains to test. When setup is complete and nginx is accessible from the domain set staging to 0 and run it again to build the real certificate.
   

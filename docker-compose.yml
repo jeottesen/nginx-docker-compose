@@ -17,33 +17,9 @@ services:
             - '~/docker/containers/nginx/config:/etc/nginx'
             - '~/docker/containers/certbot/conf:/etc/letsencrypt'
             - '~/docker/containers/certbot/www:/var/www/certbot'
-        logging:
-            options:
-                max-size: 1m
         command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
         networks:
-            - servers
-
-
-    grafana:
-        image: grafana/grafana
-        container_name: grafana
-        user: ${PUID}
-        restart: always
-        volumes:
-            - '~/docker/containers/grafana/config/grafana.ini:/etc/grafana/grafana.ini'
-            - '~/docker/containers/grafana/data:/var/lib/grafana/data'
-        networks:
-            - servers
-
-    influxdb:
-        image: influxdb
-        container_name: influxdb
-        restart: always
-        volumes:
-            - '~/docker/containers/influxdb:/var/lib/influxdb'
-        networks:
-            - servers
+            - proxies
 
     certbot:
         image: certbot/certbot
@@ -55,23 +31,8 @@ services:
         networks:
             - isolated
 
-    duckdns:
-        image: linuxserver/duckdns
-        container_name: duckdns
-        environment:
-            - PUID=${PUID}
-            - PGID=${PGID}
-            - TZ=${TZ}
-            - SUBDOMAINS=${SUBDOMAINS}
-            - FILE__TOKEN=/run/secrets/token
-        restart: unless-stopped
-        secrets:
-            - token
-        networks:
-            - isolated
-
 networks:
-    servers:
+    proxies:
         # Containers part of the reverse proxy system
         driver: bridge
     isolated:
