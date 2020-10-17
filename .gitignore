@@ -1,4 +1,5 @@
-containers/
-!containers/nginx/
-*/nginx/ssl/
-*/certbot/
+#exclude other containers except for the nginx configuration
+!containers
+containers/*
+!containers/nginx
+
